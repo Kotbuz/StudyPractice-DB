@@ -31,3 +31,12 @@ join reservations as r on r.guest_id = g.id
 group by g.id, g.name, g.phone
 having count(r.id) >= 2 and count(r.id) filter (where r.reservation_status = 'Не явились') > 0
 order by no_shows desc;
+
+
+-- Непопулярные доступные блюда, которые ни разу не покупали в оплаченных заказах
+select c.name as category_name, mi.name as item_name, mi.price from menu_items as mi
+join categories as c on c.id = mi.category_id
+where mi.is_available = true and not exists (select 1 from order_details as od
+      join orders as o on o.id = od.order_id
+      where od.menu_item_id = mi.id and o.order_status = 'Оплачен')
+order by c.name, mi.name;
