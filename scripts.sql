@@ -23,3 +23,11 @@ left join orders as o on o.employee_id = e.id and o.order_status = 'Оплаче
 where e.role = 'Официант' and e.is_active = true
 group by e.id, e.first_name, e.last_name
 order by total_revenue desc;
+
+
+-- Анализ неблагонадежных гостей (у кого минимум 2 брони и есть неявки)
+select g.name, g.phone, count(r.id) as total_reservations, count(r.id) filter (where r.reservation_status = 'Не явились') as no_shows from guests as g
+join reservations as r on r.guest_id = g.id
+group by g.id, g.name, g.phone
+having count(r.id) >= 2 and count(r.id) filter (where r.reservation_status = 'Не явились') > 0
+order by no_shows desc;
