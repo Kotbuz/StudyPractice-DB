@@ -7,9 +7,12 @@ ORDER by sell_percents DESC
 
 
 
--- Поиск свободных столиков на определенную дату и время
-select t.table_number, t.capacity, z.name from tables as t 
-join zones as z on t.zone_id = z.id 
-join reservations as r on r.table_id = t.id 
-WHERE not (r.reservation_date + r.start_time, r.reservation_date + r.end_time_estimated) 
-OVERLAPS (DATE '2026-10-25' + TIME '18:00:00', DATE '2026-10-25' + TIME '20:00:00');
+-- Поиск свободных столиков на определенную дату время и вместимость
+select t.table_number, t.capacity, z.name as zone_name from tables as t
+join zones as z on t.zone_id = z.id
+where t.capacity >= 2 and not exists (select 1 from reservations as r
+      where r.table_id = t.id and r.reservation_date = DATE '2026-10-25' 
+	  and r.reservation_status in ('Ожидается', 'Гости пришли')
+      and (r.start_time, r.end_time_estimated) 
+	  overlaps (TIME '18:00:00', TIME '20:00:00'))
+order by t.table_number;
